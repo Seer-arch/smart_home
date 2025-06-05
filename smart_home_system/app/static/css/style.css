@@ -1,0 +1,40 @@
+/* 基本样式 */
+body {
+    font-family: 'Microsoft YaHei', sans-serif;
+    background-color: #f8f9fa;
+}
+
+.chart-container {
+    background-color: white;
+    border-radius: 8px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    padding: 20px;
+    margin-bottom: 20px;
+}
+
+.card {
+    border: none;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    margin-bottom: 20px;
+}
+
+.card-title {
+    color: #333;
+    font-weight: 600;
+    margin-bottom: 20px;
+}
+
+.navbar {
+    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+}
+
+.navbar-brand {
+    font-weight: 600;
+}
+
+/* 响应式调整 */
+@media (max-width: 768px) {
+    .chart-container {
+        height: 300px;
+    }
+} 

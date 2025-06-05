@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+
+{% block title %}设备关联性 - 智能家居系统{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">设备使用关联性</h5>
+                <div class="chart-container">
+                    <canvas id="correlationChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">设备使用时间线</h5>
+                <div class="chart-container">
+                    <canvas id="timelineChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function loadDeviceCorrelationData() {
+    // 加载设备关联性数据
+    const response = await fetch('/api/v1/analytics/device-correlation');
+    const data = await response.json();
+    
+    // 统计设备关联次数
+    const correlationCount = {};
+    data.correlations.forEach(corr => {
+        const key = `${corr.device1}-${corr.device2}`;
+        correlationCount[key] = (correlationCount[key] || 0) + 1;
+    });
+    
+    // 准备图表数据
+    const labels = Object.keys(correlationCount);
+    const values = Object.values(correlationCount);
+    
+    // 绘制设备关联性图表
+    new Chart(document.getElementById('correlationChart'), {
+        type: 'bar',
+        data: {
+            labels: labels,
+            datasets: [{
+                label: '关联次数',
+                data: values,
+                backgroundColor: 'rgba(153, 102, 255, 0.5)',
+                borderColor: 'rgba(153, 102, 255, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true
+                }
+            }
+        }
+    });
+    
+    // 准备时间线数据
+    const timelineData = data.correlations.map(corr => ({
+        device1: corr.device1,
+        device2: corr.device2,
+        time1: new Date(corr.time1),
+        time2: new Date(corr.time2)
+    }));
+    
+    // 绘制时间线图表
+    new Chart(document.getElementById('timelineChart'), {
+        type: 'scatter',
+        data: {
+            datasets: [{
+                label: '设备使用时间点',
+                data: timelineData.map(d => ({
+                    x: d.time1,
+                    y: 1
+                })),
+                backgroundColor: 'rgba(255, 99, 132, 0.5)'
+            }, {
+                label: '关联设备使用时间点',
+                data: timelineData.map(d => ({
+                    x: d.time2,
+                    y: 2
+                })),
+                backgroundColor: 'rgba(54, 162, 235, 0.5)'
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                x: {
+                    type: 'time',
+                    time: {
+                        unit: 'hour'
+                    }
+                },
+                y: {
+                    display: false
+                }
+            }
+        }
+    });
+}
+
+// 页面加载完成后加载数据
+document.addEventListener('DOMContentLoaded', loadDeviceCorrelationData);
+</script>
+{% endblock %} 

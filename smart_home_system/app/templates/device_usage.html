@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+
+{% block title %}设备使用情况 - 智能家居系统{% endblock %}
+
+{% block content %}
+<div class="row">
+    <div class="col-12 mb-4">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">设备使用时长分布</h5>
+                <div class="chart-container">
+                    <canvas id="durationChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+    <div class="col-12">
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">设备能耗分布</h5>
+                <div class="chart-container">
+                    <canvas id="energyChart"></canvas>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+async function loadDeviceUsageData() {
+    // 加载设备使用频率数据
+    const response = await fetch('/api/v1/analytics/device-usage-frequency');
+    const data = await response.json();
+    
+    // 绘制设备使用时长图表
+    new Chart(document.getElementById('durationChart'), {
+        type: 'bar',
+        data: {
+            labels: data.devices.map(d => d.name),
+            datasets: [{
+                label: '平均使用时长（分钟）',
+                data: data.devices.map(d => d.avg_duration),
+                backgroundColor: 'rgba(75, 192, 192, 0.5)',
+                borderColor: 'rgba(75, 192, 192, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    title: {
+                        display: true,
+                        text: '分钟'
+                    }
+                }
+            }
+        }
+    });
+    
+    // 绘制设备能耗图表
+    new Chart(document.getElementById('energyChart'), {
+        type: 'pie',
+        data: {
+            labels: data.devices.map(d => d.name),
+            datasets: [{
+                data: data.devices.map(d => d.total_duration),
+                backgroundColor: data.devices.map(() => 
+                    `hsl(${Math.random() * 360}, 70%, 50%)`
+                )
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'right'
+                }
+            }
+        }
+    });
+}
+
+// 页面加载完成后加载数据
+document.addEventListener('DOMContentLoaded', loadDeviceUsageData);
+</script>
+{% endblock %} 
